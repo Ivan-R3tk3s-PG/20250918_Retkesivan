@@ -228,7 +228,7 @@
             <h1>Pácsa Pizza</h1>
         </div>
         <div class="subtitle">Order your favorite pizza online!</div>
-        <form>
+        <form id="orderForm">
             <div class="form-group">
                 <label for="name">Your Name</label>
                 <input type="text" id="name" name="name" placeholder="Enter your name" required>
@@ -312,6 +312,53 @@
                 &copy; 2025 Pácsa Pizza 🍕
             </div>
         </form>
+        <div id="orderResult" style="display:none; margin-top:24px; text-align:center; color:#388e3c; font-weight:600;"></div>
     </div>
+    <script>
+        document.getElementById('orderForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const form = e.target;
+            const formData = new FormData(form);
+
+            // Collect all checked pizzas and extras
+            const pizzas = [];
+            form.querySelectorAll('input[name="pizza"]:checked').forEach(cb => pizzas.push(cb.value));
+            const extras = [];
+            form.querySelectorAll('input[name="extras"]:checked').forEach(cb => extras.push(cb.value));
+
+            // Build data object
+            const data = {
+                name: formData.get('name'),
+                phone: formData.get('phone'),
+                address: formData.get('address'),
+                pizzas,
+                size: formData.get('size'),
+                extras,
+                note: formData.get('note')
+            };
+
+            // POST to https://httpbin.org/post
+            try {
+                const res = await fetch('https://httpbin.org/post', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                if (res.ok) {
+                    document.getElementById('orderResult').style.display = 'block';
+                    document.getElementById('orderResult').textContent = 'Thank you! Your order has been sent.';
+                    form.reset();
+                } else {
+                    document.getElementById('orderResult').style.display = 'block';
+                    document.getElementById('orderResult').style.color = '#c62828';
+                    document.getElementById('orderResult').textContent = 'Sorry, there was a problem sending your order.';
+                }
+            } catch (err) {
+                document.getElementById('orderResult').style.display = 'block';
+                document.getElementById('orderResult').style.color = '#c62828';
+                document.getElementById('orderResult').textContent = 'Sorry, there was a problem sending your order.';
+            }
+        });
+    </script>
 </body>
 </html>
